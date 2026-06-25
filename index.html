@@ -65,6 +65,10 @@
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v4H3zm0 8h18v4H3z" /></svg>
               Sample data
             </button>
+            <button id="loadKelowna" class="secondary-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 8.2 8 10 4.6-1.8 8-5 8-10V6z" /></svg>
+              Kelowna plan
+            </button>
             <button id="exportResults" class="secondary-button" type="button">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" /></svg>
               Export
@@ -179,6 +183,18 @@
               </ul>
             </div>
           </div>
+
+          <div id="comparisonPanel" class="comparison-panel" hidden>
+            <div class="chart-header">
+              <div>
+                <h3>Published vs Optimized</h3>
+                <span id="comparisonCaption">Kelowna source comparison</span>
+              </div>
+              <span id="comparisonDelta">Awaiting model</span>
+            </div>
+            <canvas id="comparisonChart" width="920" height="340"></canvas>
+            <p id="sourceNote" class="source-note"></p>
+          </div>
         </section>
 
         <section id="cashflow" class="panel-band">
@@ -228,5 +244,6 @@
     </div>
 
     <script src="./app.js"></script>
+    <script src="./kelowna.js"></script>
   </body>
 </html>
