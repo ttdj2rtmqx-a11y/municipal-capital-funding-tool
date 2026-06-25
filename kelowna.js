@@ -57,6 +57,7 @@ function initKelownaOverlay() {
   wrapStrategyRenderer();
   drawEmptyKelownaComparisonChart();
   kelownaButton.addEventListener("click", loadKelownaPlan);
+  loadKelownaPlan();
 }
 
 if (document.readyState === "loading") {
