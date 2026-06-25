@@ -50,14 +50,20 @@ function buildKelownaPresetProjects() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function initKelownaOverlay() {
   const kelownaButton = document.getElementById("loadKelowna");
   if (!kelownaButton) return;
   state.activeDataset = state.activeDataset || "custom";
   wrapStrategyRenderer();
   drawEmptyKelownaComparisonChart();
   kelownaButton.addEventListener("click", loadKelownaPlan);
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initKelownaOverlay);
+} else {
+  initKelownaOverlay();
+}
 
 function loadKelownaPlan() {
   state.activeDataset = "kelowna";
