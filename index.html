@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Capital Funding Optimizer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div>
+            <p class="eyebrow">Municipal finance</p>
+            <h1>Capital Funding Optimizer</h1>
+          </div>
+        </div>
+
+        <nav class="steps" aria-label="Workflow">
+          <a href="#inputs" class="active">Inputs</a>
+          <a href="#assessment">Assessment</a>
+          <a href="#strategy">Strategy</a>
+          <a href="#cashflow">Cash Flow</a>
+          <a href="#templates">Templates</a>
+        </nav>
+
+        <section class="settings-panel" aria-label="Optimization settings">
+          <h2>Optimization</h2>
+          <label>
+            Inflation
+            <input id="inflationRate" type="number" min="0" max="20" step="0.1" value="3.0" />
+          </label>
+          <label>
+            Reserve earnings
+            <input id="reserveReturnRate" type="number" min="0" max="20" step="0.1" value="2.0" />
+          </label>
+          <label>
+            Max annual tax lift
+            <input id="maxTaxLift" type="number" min="0" max="100" step="0.1" value="6.0" />
+          </label>
+          <label>
+            Planning horizon
+            <input id="horizonYears" type="number" min="5" max="50" step="1" value="30" />
+          </label>
+          <button id="runModel" class="primary-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+            Optimize funding
+          </button>
+        </section>
+      </aside>
+
+      <main>
+        <section class="topbar">
+          <div>
+            <p class="eyebrow">Working model</p>
+            <h2>Match restricted reserves, grants, growth funding, and alternatives before taxation.</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="loadSample" class="secondary-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v4H3zm0 8h18v4H3z" /></svg>
+              Sample data
+            </button>
+            <button id="exportResults" class="secondary-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" /></svg>
+              Export
+            </button>
+          </div>
+        </section>
+
+        <section id="inputs" class="panel-band">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Step 1</p>
+              <h2>Upload Source Files</h2>
+            </div>
+            <p>Upload one or more files in each category. CSV files can feed the model; other documents are assessed for what they appear to contain.</p>
+          </div>
+
+          <div class="upload-grid">
+            <label class="upload-tile">
+              <input id="reserveFile" type="file" multiple accept=".csv,.txt,.json,.pdf,.xlsx,.xls,.docx,text/csv,text/plain,application/json" />
+              <span class="upload-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5" /></svg>
+              </span>
+              <strong>Reserve balance sheet</strong>
+              <em id="reserveStatus">No files loaded</em>
+            </label>
+
+            <label class="upload-tile">
+              <input id="cashflowFile" type="file" multiple accept=".csv,.txt,.json,.pdf,.xlsx,.xls,.docx,text/csv,text/plain,application/json" />
+              <span class="upload-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M8 16l3-5 3 2 4-7" /></svg>
+              </span>
+              <strong>30 year cash flow</strong>
+              <em id="cashflowStatus">No files loaded</em>
+            </label>
+
+            <label class="upload-tile">
+              <input id="projectFile" type="file" multiple accept=".csv,.txt,.json,.pdf,.xlsx,.xls,.docx,text/csv,text/plain,application/json" />
+              <span class="upload-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v4H5zm0 7h14v7H5z" /></svg>
+              </span>
+              <strong>Projects and sources</strong>
+              <em id="projectStatus">No files loaded</em>
+            </label>
+
+            <label class="upload-tile">
+              <input id="fundingFile" type="file" multiple accept=".csv,.txt,.json,.pdf,.xlsx,.xls,.docx,text/csv,text/plain,application/json" />
+              <span class="upload-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M5 8h14M7 12h10M9 16h6" /></svg>
+              </span>
+              <strong>Grants and alternatives</strong>
+              <em id="fundingStatus">No files loaded</em>
+            </label>
+          </div>
+        </section>
+
+        <section id="assessment" class="panel-band">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Step 2</p>
+              <h2>AI Document Assessment</h2>
+            </div>
+            <p>The local assessment reviews names, file types, headers, rows, and readable text to infer purpose and missing model inputs. Server-side AI text extraction can be connected next for PDFs, Word, and Excel.</p>
+          </div>
+          <div id="assessmentGrid" class="assessment-grid">
+            <article class="assessment-empty">
+              <strong>No documents assessed yet.</strong>
+              <span>Upload files above or load sample data to see document-level findings.</span>
+            </article>
+          </div>
+        </section>
+
+        <section id="strategy" class="panel-band">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Step 3</p>
+              <h2>Recommended Strategy</h2>
+            </div>
+            <p id="modelNote">Load sample data or upload files, then run the optimizer.</p>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <span>Total capital need</span>
+              <strong id="metricNeed">$0</strong>
+            </div>
+            <div class="metric">
+              <span>Grants and alternatives</span>
+              <strong id="metricExternal">$0</strong>
+            </div>
+            <div class="metric">
+              <span>Reserve funding</span>
+              <strong id="metricReserves">$0</strong>
+            </div>
+            <div class="metric alert">
+              <span>Taxation or debt gap</span>
+              <strong id="metricGap">$0</strong>
+            </div>
+          </div>
+
+          <div class="strategy-layout">
+            <div class="chart-panel">
+              <div class="chart-header">
+                <h3>Funding Mix</h3>
+                <span id="chartCaption">Awaiting model</span>
+              </div>
+              <canvas id="fundingChart" width="840" height="320"></canvas>
+            </div>
+            <div class="findings-panel">
+              <h3>Funding Guidance</h3>
+              <ul id="findingsList">
+                <li>Upload project, cash flow, and reserve data to identify the least-tax strategy.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="cashflow" class="panel-band">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Step 4</p>
+              <h2>Annual Funding Plan</h2>
+            </div>
+            <p>Each year applies eligible grants first, then alternative sources, restricted reserves, unrestricted reserves, and finally taxation or debt.</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Project cost</th>
+                  <th>Grants</th>
+                  <th>Alternatives</th>
+                  <th>Restricted</th>
+                  <th>Unrestricted</th>
+                  <th>Tax / debt</th>
+                  <th>Ending reserves</th>
+                </tr>
+              </thead>
+              <tbody id="annualRows">
+                <tr><td colspan="8">No strategy generated yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="templates" class="panel-band">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Reference</p>
+              <h2>CSV Templates</h2>
+            </div>
+            <p>Download these, paste your municipal data into them, and upload the completed files.</p>
+          </div>
+          <div class="template-actions">
+            <button id="downloadReserves" class="secondary-button" type="button">Reserve template</button>
+            <button id="downloadCashflow" class="secondary-button" type="button">Cash flow template</button>
+            <button id="downloadProjects" class="secondary-button" type="button">Project template</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
