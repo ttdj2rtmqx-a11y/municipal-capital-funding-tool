@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Capital Funding Optimizer</title>
     <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./kelowna-analysis.css?v=1" />
+    <link rel="stylesheet" href="./kelowna-analysis.css?v=2" />
   </head>
   <body>
     <div class="app-shell">
@@ -28,6 +28,7 @@
           <a href="#strategy">Strategy</a>
           <a href="#cashflow">Cash Flow</a>
           <a href="#fundingChanges">Changes</a>
+          <a href="#longRangeCashflow">30 Year</a>
           <a href="#templates">Templates</a>
         </nav>
 
@@ -256,6 +257,73 @@
           </div>
         </section>
 
+        <section id="longRangeCashflow" class="panel-band long-range-panel" hidden>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Step 6</p>
+              <h2>30 Year Cash Flow and Debt Service</h2>
+            </div>
+            <p id="longRangeIntro">Load the Kelowna plan to see the extended cash flow model and annual debt service sensitivity.</p>
+          </div>
+
+          <div id="longRangeStats" class="change-stat-grid"></div>
+
+          <div class="long-range-section">
+            <div class="chart-header">
+              <div>
+                <h3>30 year funding cash flow</h3>
+                <span id="longRangeCaption">Capital plan extended across the full planning horizon</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="long-range-table">
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>Capital need</th>
+                    <th>Grants & alternatives</th>
+                    <th>Reserve funding</th>
+                    <th>New debt</th>
+                    <th>Taxation</th>
+                    <th>Ending reserves</th>
+                  </tr>
+                </thead>
+                <tbody id="longRangeRows">
+                  <tr><td colspan="7">No long-range model generated yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="long-range-section">
+            <div class="chart-header">
+              <div>
+                <h3>Annual debt service sensitivity</h3>
+                <span id="debtServiceCaption">Assumes 20 year level-payment borrowing for each year's optimized debt issuance</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="long-range-table">
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>New debt issued</th>
+                    <th>3.0%</th>
+                    <th>4.0%</th>
+                    <th>5.0%</th>
+                    <th>6.0%</th>
+                    <th>Taxation</th>
+                    <th>Total pressure at 5.0%</th>
+                  </tr>
+                </thead>
+                <tbody id="debtServiceRows">
+                  <tr><td colspan="8">No debt service model generated yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         <section id="templates" class="panel-band">
           <div class="section-heading">
             <div>
@@ -275,6 +343,6 @@
 
     <script src="./app.js"></script>
     <script src="./kelowna.js?v=autoload-2"></script>
-    <script src="./kelowna-analysis.js?v=1"></script>
+    <script src="./kelowna-analysis.js?v=2"></script>
   </body>
 </html>
