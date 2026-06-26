@@ -76,8 +76,67 @@
 
   function ensureLineChartCanvases() {
     injectChartStyles();
+    ensureCapitalPlanSection();
     ensureCanvas("longRangeChart", "longRangeRows");
     ensureCanvas("debtServiceChart", "debtServiceRows");
+  }
+
+  function ensureCapitalPlanSection() {
+    if (document.getElementById("capitalPlanOptimization")) return;
+    const longRange = document.getElementById("longRangeCashflow");
+    if (!longRange) return;
+    const nav = document.querySelector(".steps");
+    if (nav && !nav.querySelector('a[href="#capitalPlanOptimization"]')) {
+      const link = document.createElement("a");
+      link.href = "#capitalPlanOptimization";
+      link.textContent = "Full Plan";
+      const longRangeLink = nav.querySelector('a[href="#longRangeCashflow"]');
+      if (longRangeLink) nav.insertBefore(link, longRangeLink);
+      else nav.appendChild(link);
+    }
+    const section = document.createElement("section");
+    section.id = "capitalPlanOptimization";
+    section.className = "panel-band long-range-panel";
+    section.hidden = true;
+    section.innerHTML = `
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 6</p>
+          <h2>Full Capital Plan Optimization</h2>
+        </div>
+        <p id="capitalPlanIntro">Load the Kelowna plan to optimize the full published 2026-2030 capital plan, not just the current-year funding slice.</p>
+      </div>
+      <div id="capitalPlanStats" class="change-stat-grid"></div>
+      <div class="long-range-section">
+        <div class="chart-header">
+          <div>
+            <h3>2026-2030 optimized funding strategy</h3>
+            <span id="capitalPlanCaption">Uses the published five-year capital request schedule as the project envelope</span>
+          </div>
+        </div>
+        <canvas id="capitalPlanChart" class="line-chart-canvas" width="960" height="280"></canvas>
+        <div class="table-wrap">
+          <table class="long-range-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Capital need</th>
+                <th>Grants</th>
+                <th>Alternatives</th>
+                <th>Reserve funding</th>
+                <th>New debt</th>
+                <th>Taxation</th>
+                <th>Ending reserves</th>
+              </tr>
+            </thead>
+            <tbody id="capitalPlanRows">
+              <tr><td colspan="8">No full-plan model generated yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    longRange.insertAdjacentElement("beforebegin", section);
   }
 
   function describeAlternatives() {
@@ -169,6 +228,97 @@
       };
     });
     return { annual };
+  }
+
+  function renderFullCapitalPlanOptimization() {
+    reconcileKelownaCapitalBaseline();
+    ensureCapitalPlanSection();
+    if (typeof state === "undefined" || state.activeDataset !== "kelowna") return;
+    if (typeof kelownaPresetData === "undefined" || typeof optimizeFunding !== "function" || typeof getSettings !== "function") return;
+    const panel = document.getElementById("capitalPlanOptimization");
+    if (!panel) return;
+    const model = buildFullCapitalPlanModel();
+    panel.hidden = false;
+
+    const intro = document.getElementById("capitalPlanIntro");
+    if (intro) {
+      intro.textContent = "This section optimizes Kelowna's full published 2026-2030 Priority 1 capital plan using the source-year capital request amounts. It is separate from the 2026-only funding comparison and does not repeat the program into a 10-year extrapolation.";
+    }
+
+    const stats = document.getElementById("capitalPlanStats");
+    if (stats) {
+      stats.innerHTML = [
+        renderStat("Published capital plan", reconciledKelownaCapitalPlanTotal),
+        renderStat("Optimized capital need", model.totals.projectCost),
+        renderStat("Optimized grants", model.totals.grants),
+        renderStat("Optimized alternatives", model.totals.alternatives),
+        renderStat("Optimized reserves", model.totals.reserves),
+        renderStat("Optimized debt", model.totals.debt),
+        renderStat("Optimized taxation", model.totals.taxation)
+      ].join("");
+    }
+
+    const rows = document.getElementById("capitalPlanRows");
+    if (rows) {
+      rows.innerHTML = model.annual.map((row) => `
+        <tr>
+          <td>${row.year}</td>
+          <td>${formatMoney(row.projectCost)}</td>
+          <td>${formatMoney(row.grants)}</td>
+          <td>${formatMoney(row.alternatives)}</td>
+          <td>${formatMoney(row.reserves)}</td>
+          <td>${formatMoney(row.debt)}</td>
+          <td>${formatMoney(row.taxation)}</td>
+          <td>${formatMoney(row.endingReserves)}</td>
+        </tr>
+      `).join("");
+    }
+
+    drawMultiLineChart(document.getElementById("capitalPlanChart"), model.annual, [
+      { key: "projectCost", label: "Capital need", color: "#17212b" },
+      { key: "grants", label: "Grants", color: "#167d7f" },
+      { key: "alternatives", label: "Alternatives", color: "#4f8f45" },
+      { key: "reserves", label: "Reserve funding", color: "#19324a" },
+      { key: "debt", label: "New debt", color: "#b94a48" },
+      { key: "taxation", label: "Taxation", color: "#b87b22" },
+      { key: "endingReserves", label: "Ending reserves", color: "#6f5aa8" }
+    ]);
+  }
+
+  function buildFullCapitalPlanModel() {
+    const planYears = 5;
+    const startYear = 2026;
+    const settings = { ...getSettings(), horizonYears: planYears, inflationRate: 0 };
+    const cashflow = kelownaPresetData.cashflow.slice(0, planYears).map((row) => ({ ...row }));
+    const projects = kelownaPresetData.projects.map((project) => ({ ...project }));
+    const strategy = optimizeFunding(kelownaPresetData.reserves, cashflow, projects, settings);
+    const annual = strategy.annual.slice(0, planYears).map((row) => {
+      const split = splitTaxDebt(row, cashflow);
+      return {
+        year: row.year || startYear,
+        projectCost: row.projectCost,
+        grants: row.grants,
+        alternatives: row.alternatives,
+        reserves: row.restricted + row.unrestricted,
+        debt: split.debt,
+        taxation: split.taxation,
+        endingReserves: row.endingReserves
+      };
+    });
+    const totals = annual.reduce((sum, row) => {
+      sum.projectCost += row.projectCost;
+      sum.grants += row.grants;
+      sum.alternatives += row.alternatives;
+      sum.reserves += row.reserves;
+      sum.debt += row.debt;
+      sum.taxation += row.taxation;
+      return sum;
+    }, { projectCost: 0, grants: 0, alternatives: 0, reserves: 0, debt: 0, taxation: 0 });
+    return { annual, totals };
+  }
+
+  function renderStat(label, value) {
+    return `<div class="change-stat"><span>${label}</span><strong>${formatMoney(value)}</strong></div>`;
   }
 
   function buildSplitTenYearCashflow(planYears, startYear) {
@@ -348,6 +498,7 @@
   function renderChartsFromTables() {
     ensureLineChartCanvases();
     applySplitFundingPresentation();
+    renderFullCapitalPlanOptimization();
     renderSplitFundingTableFromKnowns();
     drawMultiLineChart(document.getElementById("longRangeChart"), parseFundingRows(), [
       { key: "projectCost", label: "Capital need", color: "#17212b" },
