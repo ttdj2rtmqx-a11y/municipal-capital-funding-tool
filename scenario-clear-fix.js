@@ -1,4 +1,27 @@
 (function () {
+  const reconciledKelownaSourceNote = "Public source: City of Kelowna Budget Deliberations agenda, December 4, 2025. The preset uses the 2026 Financial Plan PDF, pages 68 and 72-75. Amounts are converted from $000s to dollars. Page 68's $518.166M Priority 1 total includes operating and capital requests; the comparison baseline is reconciled to the $503.378M 2026 Priority 1 capital request total on page 75.";
+  const reconciledKelownaPublishedFunding = {
+    total: 503378000,
+    external: 26775000,
+    grants: 20600000,
+    alternatives: 6175000,
+    reserves: 342500000,
+    debt: 134103000,
+    taxation: 0,
+    taxDebt: 134103000
+  };
+
+  function reconcileKelownaCapitalBaseline() {
+    if (typeof kelownaPresetData !== "undefined") {
+      kelownaPresetData.sourceNote = reconciledKelownaSourceNote;
+      kelownaPresetData.publishedFunding2026 = { ...reconciledKelownaPublishedFunding };
+    }
+    if (typeof kelownaData !== "undefined") {
+      kelownaData.sourceNote = reconciledKelownaSourceNote;
+      kelownaData.publishedFunding2026 = { ...reconciledKelownaPublishedFunding };
+    }
+  }
+
   function bindScenarioClearRecalculation() {
     const button = document.getElementById("clearScenarioProjects");
     if (!button || button.dataset.recalculateBound === "true") return;
@@ -88,6 +111,7 @@
   }
 
   function renderSplitFundingTableFromKnowns() {
+    reconcileKelownaCapitalBaseline();
     if (typeof state === "undefined" || state.activeDataset !== "kelowna") return;
     if (typeof kelownaPresetData === "undefined" || typeof optimizeFunding !== "function" || typeof getSettings !== "function") return;
     const rows = document.getElementById("longRangeRows");
@@ -342,6 +366,7 @@
   }
 
   function init() {
+    reconcileKelownaCapitalBaseline();
     bindScenarioClearRecalculation();
     bindTenYearCharts();
   }
