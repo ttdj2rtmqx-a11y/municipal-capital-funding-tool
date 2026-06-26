@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Capital Funding Optimizer</title>
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./kelowna-analysis.css?v=1" />
   </head>
   <body>
     <div class="app-shell">
@@ -26,6 +27,7 @@
           <a href="#assessment">Assessment</a>
           <a href="#strategy">Strategy</a>
           <a href="#cashflow">Cash Flow</a>
+          <a href="#fundingChanges">Changes</a>
           <a href="#templates">Templates</a>
         </nav>
 
@@ -226,6 +228,34 @@
           </div>
         </section>
 
+        <section id="fundingChanges" class="panel-band funding-change-panel" hidden>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Step 5</p>
+              <h2>Funding Changes Behind the Savings</h2>
+            </div>
+            <p id="fundingChangeIntro">Load the Kelowna plan to see how the optimized strategy differs from the published funding plan.</p>
+          </div>
+
+          <div id="fundingChangeStats" class="change-stat-grid"></div>
+          <div class="commentary-box">
+            <h3>Commentary</h3>
+            <ul id="fundingChangeComments">
+              <li>Kelowna analysis will appear after the model runs.</li>
+            </ul>
+          </div>
+
+          <div class="project-change-section">
+            <div class="chart-header">
+              <div>
+                <h3>Project-by-project changes</h3>
+                <span id="projectChangeCaption">Expandable 2026 funding comparison</span>
+              </div>
+            </div>
+            <div id="projectChangeList" class="project-change-list"></div>
+          </div>
+        </section>
+
         <section id="templates" class="panel-band">
           <div class="section-heading">
             <div>
@@ -245,5 +275,6 @@
 
     <script src="./app.js"></script>
     <script src="./kelowna.js?v=autoload-2"></script>
+    <script src="./kelowna-analysis.js?v=1"></script>
   </body>
 </html>
