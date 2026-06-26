@@ -51,6 +51,136 @@
     ensureCanvas("debtServiceChart", "debtServiceRows");
   }
 
+  function describeAlternatives() {
+    const section = document.querySelector("#longRangeRows")?.closest(".long-range-section");
+    if (!section || section.querySelector(".alternative-source-note")) return;
+    const header = section.querySelector(".chart-header");
+    if (!header) return;
+    const note = document.createElement("p");
+    note.className = "source-note alternative-source-note";
+    note.textContent = "Alternatives are non-tax, non-grant funding sources such as development cost charges, developer contributions, utility/airport/parking recoveries, partner contributions, fees, and reserve-backed recoveries assigned to eligible project types.";
+    header.insertAdjacentElement("afterend", note);
+  }
+
+  function splitFundingTableHeaders() {
+    const headerRow = document.querySelector("#longRangeRows")?.closest("table")?.querySelector("thead tr");
+    if (!headerRow || headerRow.dataset.splitFunding === "true") return;
+    headerRow.dataset.splitFunding = "true";
+    headerRow.innerHTML = `
+      <th>Year</th>
+      <th>Capital need</th>
+      <th>Grants</th>
+      <th>Alternatives</th>
+      <th>Reserve funding</th>
+      <th>New debt</th>
+      <th>Taxation</th>
+      <th>Ending reserves</th>
+    `;
+  }
+
+  function applySplitFundingPresentation() {
+    describeAlternatives();
+    splitFundingTableHeaders();
+    const intro = document.getElementById("longRangeIntro");
+    if (intro && /residual funding into new debt/i.test(intro.textContent || "")) {
+      intro.textContent = "This 10 year view uses Kelowna's available 2026-2030 capital program as the source period, repeats that five-year program once for years 2031-2035, applies the current inflation and reserve settings, and separates grants, alternatives, reserves, new debt, and taxation.";
+    }
+  }
+
+  function renderSplitFundingTableFromKnowns() {
+    if (typeof state === "undefined" || state.activeDataset !== "kelowna") return;
+    if (typeof kelownaPresetData === "undefined" || typeof optimizeFunding !== "function" || typeof getSettings !== "function") return;
+    const rows = document.getElementById("longRangeRows");
+    if (!rows) return;
+    const model = buildSplitTenYearModel();
+    rows.innerHTML = model.annual.map((row) => `
+      <tr>
+        <td>${row.year}</td>
+        <td>${formatMoney(row.projectCost)}</td>
+        <td>${formatMoney(row.grants)}</td>
+        <td>${formatMoney(row.alternatives)}</td>
+        <td>${formatMoney(row.reserves)}</td>
+        <td>${formatMoney(row.debt)}</td>
+        <td>${formatMoney(row.taxation)}</td>
+        <td>${formatMoney(row.endingReserves)}</td>
+      </tr>
+    `).join("");
+  }
+
+  function buildSplitTenYearModel() {
+    const planYears = 10;
+    const startYear = 2026;
+    const settings = { ...getSettings(), horizonYears: planYears };
+    const cashflow = buildSplitTenYearCashflow(planYears, startYear);
+    const projects = buildSplitTenYearProjects(settings, planYears, startYear);
+    const strategy = optimizeFunding(kelownaPresetData.reserves, cashflow, projects, settings);
+    const annual = strategy.annual.slice(0, planYears).map((row) => {
+      const split = splitTaxDebt(row, cashflow);
+      return {
+        year: row.year,
+        projectCost: row.projectCost,
+        grants: row.grants,
+        alternatives: row.alternatives,
+        reserves: row.restricted + row.unrestricted,
+        debt: split.debt,
+        taxation: split.taxation,
+        endingReserves: row.endingReserves
+      };
+    });
+    return { annual };
+  }
+
+  function buildSplitTenYearCashflow(planYears, startYear) {
+    const base = kelownaPresetData.cashflow[0];
+    return Array.from({ length: planYears }, (_, index) => ({
+      year: startYear + index,
+      baseRevenues: base.baseRevenues * Math.pow(1.025, index),
+      baseExpenses: base.baseExpenses * Math.pow(1.028, index),
+      taxRevenue: base.taxRevenue * Math.pow(1.03, index),
+      debtCapacity: index === 0 ? 134103000 : 74800000 * Math.pow(1.02, Math.max(0, index - 1))
+    }));
+  }
+
+  function buildSplitTenYearProjects(settings, planYears, startYear) {
+    const horizonEnd = startYear + planYears - 1;
+    const cycleLength = 5;
+    const repeatedSourceProjects = kelownaPresetData.projects.flatMap((project) => {
+      const baseOffset = project.startYear - startYear;
+      const baseName = String(project.name).replace(/\s+capital requests\s+\d{4}$/i, "");
+      const projects = [];
+      for (let cycle = 0; ; cycle += 1) {
+        const year = startYear + baseOffset + cycle * cycleLength;
+        if (year > horizonEnd) break;
+        projects.push({
+          ...project,
+          name: `${baseName} capital requests ${year}`,
+          startYear: year,
+          endYear: year,
+          alternativeFunding: (project.alternativeFunding || 0) * Math.pow(1 + settings.inflationRate, cycle * cycleLength)
+        });
+      }
+      return projects;
+    });
+    const scenarioProjects = Array.isArray(state.scenarioProjects)
+      ? state.scenarioProjects
+          .filter((project) => project.startYear <= horizonEnd && project.endYear >= startYear)
+          .map((project) => ({ ...project }))
+      : [];
+    return repeatedSourceProjects.concat(scenarioProjects);
+  }
+
+  function splitTaxDebt(row, cashflowRows) {
+    const cashflow = cashflowRows.find((item) => item.year === row.year);
+    const capacity = cashflow ? cashflow.debtCapacity || 0 : 0;
+    const debt = Math.min(row.gap || 0, capacity);
+    return { debt, taxation: Math.max(0, (row.gap || 0) - debt) };
+  }
+
+  function formatMoney(value) {
+    if (typeof currency !== "undefined") return currency.format(value);
+    return new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(value);
+  }
+
   function parseMoney(value) {
     return Number(String(value || "").replace(/[^0-9.-]/g, "")) || 0;
   }
@@ -62,11 +192,13 @@
       .map((cells) => ({
         year: Number(cells[0].textContent) || 0,
         projectCost: parseMoney(cells[1].textContent),
-        external: parseMoney(cells[2].textContent),
-        reserves: parseMoney(cells[3].textContent),
-        debt: parseMoney(cells[4].textContent),
-        taxation: parseMoney(cells[5].textContent),
-        endingReserves: parseMoney(cells[6].textContent)
+        grants: cells.length >= 8 ? parseMoney(cells[2].textContent) : parseMoney(cells[2].textContent),
+        alternatives: cells.length >= 8 ? parseMoney(cells[3].textContent) : 0,
+        external: cells.length >= 8 ? parseMoney(cells[2].textContent) + parseMoney(cells[3].textContent) : parseMoney(cells[2].textContent),
+        reserves: parseMoney(cells[cells.length >= 8 ? 4 : 3].textContent),
+        debt: parseMoney(cells[cells.length >= 8 ? 5 : 4].textContent),
+        taxation: parseMoney(cells[cells.length >= 8 ? 6 : 5].textContent),
+        endingReserves: parseMoney(cells[cells.length >= 8 ? 7 : 6].textContent)
       }))
       .filter((row) => row.year);
   }
@@ -174,13 +306,16 @@
 
   function renderChartsFromTables() {
     ensureLineChartCanvases();
+    applySplitFundingPresentation();
+    renderSplitFundingTableFromKnowns();
     drawMultiLineChart(document.getElementById("longRangeChart"), parseFundingRows(), [
       { key: "projectCost", label: "Capital need", color: "#17212b" },
-      { key: "external", label: "Grants & alternatives", color: "#167d7f" },
+      { key: "grants", label: "Grants", color: "#167d7f" },
+      { key: "alternatives", label: "Alternatives", color: "#4f8f45" },
       { key: "reserves", label: "Reserve funding", color: "#19324a" },
       { key: "debt", label: "New debt", color: "#b94a48" },
       { key: "taxation", label: "Taxation", color: "#b87b22" },
-      { key: "endingReserves", label: "Ending reserves", color: "#4f8f45" }
+      { key: "endingReserves", label: "Ending reserves", color: "#6f5aa8" }
     ]);
     drawMultiLineChart(document.getElementById("debtServiceChart"), parseDebtRows(), [
       { label: "Debt service 3.0%", color: "#167d7f", value: (row) => row.serviceByRate["3.0%"] },
