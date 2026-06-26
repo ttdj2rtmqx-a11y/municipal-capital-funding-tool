@@ -1,5 +1,7 @@
 (function () {
-  const reconciledKelownaSourceNote = "Public source: City of Kelowna Budget Deliberations agenda, December 4, 2025. The preset uses the 2026 Financial Plan PDF, pages 68 and 72-75. Amounts are converted from $000s to dollars. Page 68's $518.166M Priority 1 total includes operating and capital requests; the comparison baseline is reconciled to the $503.378M 2026 Priority 1 capital request total on page 75.";
+  const reconciledKelownaSourceNote = "Public source: City of Kelowna Budget Deliberations agenda, December 4, 2025. The preset uses the 2026 Financial Plan PDF, pages 68 and 72-75. Amounts are converted from $000s to dollars. Page 68's $518.166M Priority 1 total includes operating and capital requests; the 2026 comparison baseline is reconciled to the $503.378M 2026 Priority 1 capital request total, while the published 2026-2030 Priority 1 capital plan total is $1.767203B on page 75.";
+  const reconciledKelownaCapitalPlanTotal = 1767203000;
+  const reconciledKelownaCapitalPlanYears = "2026-2030";
   const reconciledKelownaPublishedFunding = {
     total: 503378000,
     external: 26775000,
@@ -14,10 +16,14 @@
   function reconcileKelownaCapitalBaseline() {
     if (typeof kelownaPresetData !== "undefined") {
       kelownaPresetData.sourceNote = reconciledKelownaSourceNote;
+      kelownaPresetData.publishedCapitalPlanTotal = reconciledKelownaCapitalPlanTotal;
+      kelownaPresetData.publishedCapitalPlanYears = reconciledKelownaCapitalPlanYears;
       kelownaPresetData.publishedFunding2026 = { ...reconciledKelownaPublishedFunding };
     }
     if (typeof kelownaData !== "undefined") {
       kelownaData.sourceNote = reconciledKelownaSourceNote;
+      kelownaData.publishedCapitalPlanTotal = reconciledKelownaCapitalPlanTotal;
+      kelownaData.publishedCapitalPlanYears = reconciledKelownaCapitalPlanYears;
       kelownaData.publishedFunding2026 = { ...reconciledKelownaPublishedFunding };
     }
   }
@@ -104,10 +110,21 @@
   function applySplitFundingPresentation() {
     describeAlternatives();
     splitFundingTableHeaders();
+    insertPublishedPlanStat();
     const intro = document.getElementById("longRangeIntro");
     if (intro && /residual funding into new debt/i.test(intro.textContent || "")) {
       intro.textContent = "This 10 year view uses Kelowna's available 2026-2030 capital program as the source period, repeats that five-year program once for years 2031-2035, applies the current inflation and reserve settings, and separates grants, alternatives, reserves, new debt, and taxation.";
     }
+  }
+
+  function insertPublishedPlanStat() {
+    const stats = document.getElementById("longRangeStats");
+    if (!stats || document.getElementById("publishedCapitalPlanTotalStat")) return;
+    const stat = document.createElement("div");
+    stat.id = "publishedCapitalPlanTotalStat";
+    stat.className = "change-stat";
+    stat.innerHTML = `<span>${reconciledKelownaCapitalPlanYears} published capital plan</span><strong>${formatMoney(reconciledKelownaCapitalPlanTotal)}</strong>`;
+    stats.insertAdjacentElement("afterbegin", stat);
   }
 
   function renderSplitFundingTableFromKnowns() {
