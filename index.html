@@ -24,6 +24,7 @@
 
         <nav class="steps" aria-label="Workflow">
           <a href="#inputs" class="active">Inputs</a>
+          <a href="#newProject">New Project</a>
           <a href="#assessment">Assessment</a>
           <a href="#strategy">Strategy</a>
           <a href="#cashflow">Cash Flow</a>
@@ -124,6 +125,90 @@
               <strong>Grants and alternatives</strong>
               <em id="fundingStatus">No files loaded</em>
             </label>
+          </div>
+        </section>
+
+        <section id="newProject" class="panel-band scenario-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Scenario</p>
+              <h2>Add a Project</h2>
+            </div>
+            <p>Place a new capital project into the active plan. The model applies known service-category assumptions and recalculates the optimal funding strategy.</p>
+          </div>
+
+          <form id="newProjectForm" class="scenario-form">
+            <label>
+              Project name
+              <input id="scenarioName" type="text" value="New community facility renewal" required />
+            </label>
+            <label>
+              Service category
+              <select id="scenarioCategory">
+                <option value="facilities">Facilities</option>
+                <option value="roads">Transportation / roads</option>
+                <option value="water">Water utility</option>
+                <option value="wastewater">Wastewater utility</option>
+                <option value="stormwater">Stormwater</option>
+                <option value="parks">Parks</option>
+                <option value="recreation">Sport & recreation</option>
+                <option value="transit">Transit</option>
+                <option value="airport">Airport</option>
+                <option value="parking">Parking</option>
+                <option value="solid waste">Solid waste</option>
+                <option value="general">General</option>
+              </select>
+            </label>
+            <label>
+              Start year
+              <input id="scenarioStartYear" type="number" min="2026" max="2035" step="1" value="2027" required />
+            </label>
+            <label>
+              End year
+              <input id="scenarioEndYear" type="number" min="2026" max="2035" step="1" value="2028" required />
+            </label>
+            <label>
+              Total cost
+              <input id="scenarioCost" type="number" min="0" step="1000" value="25000000" required />
+            </label>
+            <label>
+              Growth share
+              <input id="scenarioGrowthShare" type="number" min="0" max="100" step="1" value="25" />
+            </label>
+            <label>
+              Grant rate
+              <input id="scenarioGrantRate" type="number" min="0" max="100" step="1" value="8" />
+            </label>
+            <label>
+              Alternative funding
+              <input id="scenarioAlternativeFunding" type="number" min="0" step="1000" value="0" />
+            </label>
+            <label>
+              Priority
+              <input id="scenarioPriority" type="number" min="1" max="9" step="1" value="2" />
+            </label>
+            <label class="scenario-check">
+              <input id="scenarioGrantEligible" type="checkbox" checked />
+              Grant eligible
+            </label>
+            <div class="scenario-actions">
+              <button class="primary-button" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                Add and recalculate
+              </button>
+              <button id="clearScenarioProjects" class="secondary-button" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12M9 7v12m6-12v12M10 7l1-2h2l1 2" /></svg>
+                Clear scenarios
+              </button>
+            </div>
+          </form>
+
+          <div class="scenario-summary">
+            <div>
+              <h3>Scenario projects</h3>
+              <span id="scenarioProjectCount">No scenario projects added</span>
+            </div>
+            <div id="scenarioProjectList" class="scenario-project-list"></div>
           </div>
         </section>
 
@@ -344,6 +429,6 @@
     <script src="./app.js"></script>
     <script src="./kelowna.js?v=autoload-2"></script>
     <script src="./kelowna-analysis.js?v=2"></script>
-    <script src="./ten-year-plan.js?v=1"></script>
+    <script src="./ten-year-plan.js?v=2"></script>
   </body>
 </html>
