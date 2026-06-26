@@ -28,7 +28,7 @@
           <a href="#strategy">Strategy</a>
           <a href="#cashflow">Cash Flow</a>
           <a href="#fundingChanges">Changes</a>
-          <a href="#longRangeCashflow">30 Year</a>
+          <a href="#longRangeCashflow">10 Year</a>
           <a href="#templates">Templates</a>
         </nav>
 
@@ -47,8 +47,8 @@
             <input id="maxTaxLift" type="number" min="0" max="100" step="0.1" value="6.0" />
           </label>
           <label>
-            Planning horizon
-            <input id="horizonYears" type="number" min="5" max="50" step="1" value="30" />
+            Plan period
+            <input id="horizonYears" type="number" min="10" max="10" step="1" value="10" />
           </label>
           <button id="runModel" class="primary-button" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
@@ -103,7 +103,7 @@
               <span class="upload-icon">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16M8 16l3-5 3 2 4-7" /></svg>
               </span>
-              <strong>30 year cash flow</strong>
+              <strong>10 year cash flow</strong>
               <em id="cashflowStatus">No files loaded</em>
             </label>
 
@@ -261,9 +261,9 @@
           <div class="section-heading">
             <div>
               <p class="eyebrow">Step 6</p>
-              <h2>30 Year Cash Flow and Debt Service</h2>
+              <h2>10 Year Cash Flow and Debt Service</h2>
             </div>
-            <p id="longRangeIntro">Load the Kelowna plan to see the extended cash flow model and annual debt service sensitivity.</p>
+            <p id="longRangeIntro">Load the Kelowna plan to see the 10 year cash flow model and annual debt service sensitivity.</p>
           </div>
 
           <div id="longRangeStats" class="change-stat-grid"></div>
@@ -271,8 +271,8 @@
           <div class="long-range-section">
             <div class="chart-header">
               <div>
-                <h3>30 year funding cash flow</h3>
-                <span id="longRangeCaption">Capital plan extended across the full planning horizon</span>
+                <h3>10 year funding cash flow</h3>
+                <span id="longRangeCaption">Capital plan modelled across the 10 year planning period</span>
               </div>
             </div>
             <div class="table-wrap">
@@ -344,5 +344,6 @@
     <script src="./app.js"></script>
     <script src="./kelowna.js?v=autoload-2"></script>
     <script src="./kelowna-analysis.js?v=2"></script>
+    <script src="./ten-year-plan.js?v=1"></script>
   </body>
 </html>
