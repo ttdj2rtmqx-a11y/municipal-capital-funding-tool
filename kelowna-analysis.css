@@ -1,9 +1,11 @@
-.funding-change-panel {
+.funding-change-panel,
+.long-range-panel {
   display: grid;
   gap: 16px;
 }
 
-.funding-change-panel[hidden] {
+.funding-change-panel[hidden],
+.long-range-panel[hidden] {
   display: none;
 }
 
@@ -40,7 +42,8 @@
 }
 
 .commentary-box,
-.project-change-section {
+.project-change-section,
+.long-range-section {
   border: 1px solid var(--line);
   background: #fbfcfc;
   padding: 16px;
@@ -62,7 +65,8 @@
   margin-top: 8px;
 }
 
-.project-change-section .chart-header {
+.project-change-section .chart-header,
+.long-range-section .chart-header {
   margin-bottom: 12px;
 }
 
@@ -163,6 +167,19 @@
   line-height: 1.5;
   background: #fffaf1;
   border: 1px solid #ead9bd;
+}
+
+.long-range-table {
+  min-width: 1040px;
+}
+
+.long-range-table th,
+.long-range-table td {
+  white-space: nowrap;
+}
+
+.long-range-table tbody tr:nth-child(even) {
+  background: #fbfcfc;
 }
 
 @media (max-width: 980px) {
